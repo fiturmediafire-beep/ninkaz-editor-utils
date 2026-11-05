@@ -346,7 +346,7 @@ class $modify(MEHSVWidgetPopup, HSVWidgetPopup) {
     };
 
     $override
-    bool init(ccHSVValue hsv, HSVWidgetDelegate* delegate, gd::string title) {
+        bool init(ccHSVValue hsv, HSVWidgetDelegate* delegate, std::string title) {
         if (!HSVWidgetPopup::init(hsv, delegate, title)) return false;
 
         m_fields->isBase = title == "Base HSV";
@@ -394,8 +394,8 @@ class $modify(MEHSVLiveOverlay, HSVLiveOverlay) {
     };
 
     $override
-    bool init(GameObject* obj, CCArray* objs) {
-        if (!HSVLiveOverlay::init(obj, objs)) return false;
+        bool init(GameObject* obj, CCArray* objs, ccColor3B color1, ccColor3B color2) {
+        if (!HSVLiveOverlay::init(obj, objs, color1, color2)) return false;
 
         // layer above widget
         m_buttonMenu->setZOrder(2);
