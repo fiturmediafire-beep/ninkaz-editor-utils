@@ -1,61 +1,54 @@
-name: Build Geode Mod
+name: Build Binaries
 
 on:
-    workflow_dispatch:
-    push:
-        branches:
-            - "**"
+  workflow_dispatch:
+  push:
+    branches:
+      - "**"
 
 jobs:
-    build:
-        strategy:
-            fail-fast: false
-            matrix:
-                config:
-                    - name: Windows
-                      os: windows-latest
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - name: Android64
+            os: ubuntu-latest
+            target: Android64
+          - name: Android32
+            os: ubuntu-latest
+            target: Android32
 
-                    - name: macOS
-                      os: macos-latest
+    name: ${{ matrix.config.name }}
+    runs-on: ${{ matrix.config.os }}
 
-                    - name: Android32
-                      os: ubuntu-latest
-                      target: Android32
+    steps:
+      - uses: actions/checkout@v4
 
-                    - name: Android64
-                      os: ubuntu-latest
-                      target: Android64
+      - name: Build the mod
+        uses: geode-sdk/build-geode-mod@main
+        with:
+          combine: true
+          sdk: given
+          cli: latest
+          target: ${{ matrix.config.target }}
+          build-config: Release
+          android-min-sdk: 23
+          use-cpm-cache: true
+          use-lto: true
+          export-symbols: true
 
-                    - name: iOS
-                      os: macos-latest
-                      target: iOS
+  package:
+    name: Package builds
+    runs-on: ubuntu-latest
+    needs: ["build"]
 
-        name: ${{ matrix.config.name }}
-        runs-on: ${{ matrix.config.os }}
+    steps:
+      - uses: geode-sdk/build-geode-mod/combine@main
+        id: build
 
-        steps:
-            - uses: actions/checkout@v4
-
-            - name: Build the mod
-              uses: geode-sdk/build-geode-mod@main
-              with:
-                  bindings: flurrybun/geode-bindings
-                  bindings-ref: main
-                  export-pdb: true
-                  export-symbols: true
-                  combine: true
-                  target: ${{ matrix.config.target }}
-
-    package:
-        name: Package builds
-        runs-on: ubuntu-latest
-        needs: ["build"]
-
-        steps:
-            - uses: geode-sdk/build-geode-mod/combine@main
-              id: build
-
-            - uses: actions/upload-artifact@v4
-              with:
-                  name: Build Output
-                  path: ${{ steps.build.outputs.build-output }}
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Build Output
+          path: ${{ steps.build.outputs.build-output }}
