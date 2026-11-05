@@ -237,7 +237,7 @@ class $modify(MECreateParticlePopup, CreateParticlePopup) {
     };
 
     $override
-    bool init(ParticleGameObject* obj, cocos2d::CCArray* objs, gd::string str) {
+    bool init(ParticleGameObject* obj, cocos2d::CCArray* objs, std::string str) {
         if (!CreateParticlePopup::init(obj, objs, str)) return false;
 
         m_fields->init(this);
