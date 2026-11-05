@@ -389,7 +389,7 @@ class $modify(MESetupTriggerPopup, SetupTriggerPopup) {
 
     $override
     CCArray* createValueControlAdvanced(
-        int property, gd::string label, CCPoint position, float scale, bool disableSlider, InputValueType valueType,
+        int property, std::string label, CCPoint position, float scale, bool disableSlider, InputValueType valueType,
         int charCountLimit, bool enableArrows, float sliderMin, float sliderMax, int page, int group,
         GJInputStyle inputStyle, int decimalPlaces, bool enableTrashCan
     ) {
