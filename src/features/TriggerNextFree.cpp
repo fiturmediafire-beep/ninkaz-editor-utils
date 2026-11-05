@@ -189,8 +189,8 @@ class $modify(TNFSetupTriggerPopup, SetupTriggerPopup) {
     };
 
     $override
-    bool init(EffectGameObject* trigger, CCArray* triggers, float width, float height, int unkEnum) {
-        if (!SetupTriggerPopup::init(trigger, triggers, width, height, unkEnum)) return false;
+    bool init(EffectGameObject* trigger, CCArray* triggers, float width, float height, int unkEnum, float unkFloat) {
+        if (!SetupTriggerPopup::init(trigger, triggers, width, height, unkEnum, unkFloat)) return false;
         if (!MultiEditContext::isTriggerPopup(this)) return true;
 
         m_fields->setupMixedListener = SetupMixedEvent().listen([this](MultiEditContext* ctx) {
@@ -263,7 +263,7 @@ class $modify(TNFSetupTriggerPopup, SetupTriggerPopup) {
                 nextFree = getNextFreeItemID(true);
                 break;
             case PropertyType::BlockID:
-                nextFree = lel->getNextFreeBlockID(gd::unordered_set<int>());
+                nextFree = lel->getNextFreeBlockID(std::unordered_set<int>());
                 break;
             case PropertyType::ControlID:
                 nextFree = getNextFreeControlID();
