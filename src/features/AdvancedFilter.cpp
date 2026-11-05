@@ -16,26 +16,35 @@ class $modify(AFEditorUI, EditorUI) {
         if (!EditorUI::init(lel)) return false;
 
         // modify ui
-
         auto filterMenu = querySelector("delete-category-menu > delete-filter-menu");
 
-        filterMenu->removeChildByID("delete-filter-group-id");
-        filterMenu->removeChildByID("delete-filter-color");
-        filterMenu->removeChildByID("delete-reset-search");
+        // TAMBAHKAN PENGAMAN DI SINI
+        if (filterMenu) {
+            filterMenu->removeChildByID("delete-filter-group-id");
+            filterMenu->removeChildByID("delete-filter-color");
+            filterMenu->removeChildByID("delete-reset-search");
 
-        m_fields->activeSpr = createFilterSprite(true);
-        m_fields->inactiveSpr = createFilterSprite(false);
-        auto btn = CCMenuItemSpriteExtra::create(m_fields->inactiveSpr, this, menu_selector(AFEditorUI::onFilter));
-        btn->setID("delete-filter-advanced"_spr);
-        m_fields->filterBtn = btn;
+            m_fields->activeSpr = createFilterSprite(true);
+            m_fields->inactiveSpr = createFilterSprite(false);
+            auto btn = CCMenuItemSpriteExtra::create(m_fields->inactiveSpr, this, menu_selector(AFEditorUI::onFilter));
+            btn->setID("delete-filter-advanced"_spr);
+            m_fields->filterBtn = btn;
 
-        filterMenu->insertAfter(btn, filterMenu->getChildByID("delete-find-group-id"));
-        filterMenu->updateLayout();
+            auto findGroupIdNode = filterMenu->getChildByID("delete-find-group-id");
+            if (findGroupIdNode) {
+                filterMenu->insertAfter(btn, findGroupIdNode);
+            } else {
+                filterMenu->addChild(btn);
+            }
+            
+            filterMenu->updateLayout();
+        }
 
         // reset group & color filters, since they're now inaccessible
-
-        GameManager::get()->setIntGameVariable("0133", 0);
-        GameManager::get()->setIntGameVariable("0139", 0);
+        if (GameManager::get()) {
+            GameManager::get()->setIntGameVariable("0133", 0);
+            GameManager::get()->setIntGameVariable("0139", 0);
+        }
 
         onUpdateFilter();
 
@@ -44,14 +53,14 @@ class $modify(AFEditorUI, EditorUI) {
     
     $override
     void selectObjects(CCArray* objects, bool dontFilter) {
-        if (dontFilter) {
+        if (dontFilter || !objects) {
             EditorUI::selectObjects(objects, dontFilter);
             return;
         }
 
         for (size_t i = objects->count(); i-- > 0;) {
             auto object = static_cast<GameObject*>(objects->objectAtIndex(i));
-            if (shouldFilterObject(object)) {
+            if (object && shouldFilterObject(object)) {
                 objects->removeObjectAtIndex(i);
             }
         }
@@ -71,7 +80,7 @@ class $modify(AFEditorUI, EditorUI) {
     }
 
     bool shouldFilterObject(GameObject* object) {
-        // if (!s_filter.isActive()) return false;
+        if (!object) return false;
 
         if (s_filter.m_group.isActive()) {
             bool hasGroup = false;
@@ -131,13 +140,17 @@ class $modify(AFEditorUI, EditorUI) {
 
     void onFilter(CCObject* sender) {
         auto popup = AdvFilterPopup::create();
+        if (!popup) return;
+        
         popup->m_noElasticity = true;
 
         popup->show();
     }
 
     void onUpdateFilter() {
-        m_fields->filterBtn->setSprite(s_filter.isActive() ? m_fields->activeSpr : m_fields->inactiveSpr);
+        if (m_fields->filterBtn && m_fields->activeSpr && m_fields->inactiveSpr) {
+            m_fields->filterBtn->setSprite(s_filter.isActive() ? m_fields->activeSpr : m_fields->inactiveSpr);
+        }
     }
 };
 
@@ -241,7 +254,7 @@ bool AdvFilterPopup::init() {
     if (!Popup::init(420.f, 265.f)) return false;
 
     setTitle("Advanced Filter");
-    m_closeBtn->removeFromParent();
+    if (m_closeBtn) m_closeBtn->removeFromParent();
 
     auto infoText = "Create a <cy>delete filter</c> so only objects that <cg>match certain conditions</c> can be deleted.\n"
         "Define a <cl>range with a hyphen</c> (1-5) and a <cp>series with commas</c> (1,2,3). These can be combined (1-3,5,10).\n"
@@ -249,7 +262,7 @@ bool AdvFilterPopup::init() {
 
     auto infoBtn = InfoAlertButton::create("Help", infoText, 1);
     infoBtn->setID("info-button"_spr);
-    m_buttonMenu->addChildAtPosition(infoBtn, Anchor::TopLeft, {18, -18});
+    if (m_buttonMenu) m_buttonMenu->addChildAtPosition(infoBtn, Anchor::TopLeft, {18, -18});
 
     float yOffset = 26;
     float yPositions[] = { 36 + yOffset, 0 + yOffset, -36 + yOffset };
@@ -269,28 +282,28 @@ bool AdvFilterPopup::init() {
 
     auto colorToggler = createToggler("expand-btn.png"_spr, menu_selector(AdvFilterPopup::onToggleColor));
     colorToggler->setID("expand-color-btn"_spr);
-    m_buttonMenu->addChildAtPosition(colorToggler, Anchor::Center, {16, yPositions[1]});
+    if (m_buttonMenu) m_buttonMenu->addChildAtPosition(colorToggler, Anchor::Center, {16, yPositions[1]});
     m_colorToggler = colorToggler;
 
     auto scaleToggler = createToggler("expand-btn.png"_spr, menu_selector(AdvFilterPopup::onToggleScale));
     scaleToggler->setID("expand-scale-btn"_spr);
-    m_buttonMenu->addChildAtPosition(scaleToggler, Anchor::Center, {-5, yPositions[2]});
+    if (m_buttonMenu) m_buttonMenu->addChildAtPosition(scaleToggler, Anchor::Center, {-5, yPositions[2]});
     m_scaleToggler = scaleToggler;
 
     auto moreColorsToggler = createToggler("more-colors-btn.png"_spr, menu_selector(AdvFilterPopup::onMoreColors));
     moreColorsToggler->setID("more-colors-btn"_spr);
     moreColorsToggler->setTag(ColorType::BOTH);
-    m_buttonMenu->addChildAtPosition(moreColorsToggler, Anchor::Center, {-5, yPositions[1]});
+    if (m_buttonMenu) m_buttonMenu->addChildAtPosition(moreColorsToggler, Anchor::Center, {-5, yPositions[1]});
 
     auto moreBaseColorsToggler = createToggler("more-colors-btn.png"_spr, menu_selector(AdvFilterPopup::onMoreColors));
     moreBaseColorsToggler->setID("more-base-colors-btn"_spr);
     moreBaseColorsToggler->setTag(ColorType::BASE);
-    m_buttonMenu->addChildAtPosition(moreBaseColorsToggler, Anchor::Center, {-5, yPositions[1]});
+    if (m_buttonMenu) m_buttonMenu->addChildAtPosition(moreBaseColorsToggler, Anchor::Center, {-5, yPositions[1]});
 
     auto moreDetailColorsToggler = createToggler("more-colors-btn.png"_spr, menu_selector(AdvFilterPopup::onMoreColors));
     moreDetailColorsToggler->setID("more-detail-colors-btn"_spr);
     moreDetailColorsToggler->setTag(ColorType::DETAIL);
-    m_buttonMenu->addChildAtPosition(moreDetailColorsToggler, Anchor::Center, {167, yPositions[1]});
+    if (m_buttonMenu) m_buttonMenu->addChildAtPosition(moreDetailColorsToggler, Anchor::Center, {167, yPositions[1]});
 
     m_moreColorBtns[ColorType::BOTH] = moreColorsToggler;
     m_moreColorBtns[ColorType::BASE] = moreBaseColorsToggler;
@@ -331,7 +344,7 @@ bool AdvFilterPopup::init() {
     m_extraToggler = extraBtn;
 
     zLayerMenu->updateLayout();
-    m_mainLayer->addChildAtPosition(zLayerMenu, Anchor::Center, {0, -52});
+    if (m_mainLayer) m_mainLayer->addChildAtPosition(zLayerMenu, Anchor::Center, {0, -52});
 
     // BOTTOM MENU 
 
@@ -365,19 +378,19 @@ bool AdvFilterPopup::init() {
     bottomMenu->addChild(selectAllBtn);
     bottomMenu->addChild(resetBtn);
     bottomMenu->updateLayout();
-    m_mainLayer->addChildAtPosition(bottomMenu, Anchor::Bottom, {0, 24});
+    if (m_mainLayer) m_mainLayer->addChildAtPosition(bottomMenu, Anchor::Bottom, {0, 24});
 
     // UPDATE VALUES
 
     onUpdateValue();
 
     if (s_filter.m_scale.isSplit()) {
-        scaleToggler->toggle(true);
+        if (scaleToggler) scaleToggler->toggle(true);
         onToggleScale(nullptr);
     }
 
     if (s_filter.m_color.isSplit()) {
-        colorToggler->toggle(true);
+        if (colorToggler) colorToggler->toggle(true);
         onToggleColor(nullptr);
     }
 
@@ -442,7 +455,7 @@ void AdvFilterPopup::addLine(
     menu->addChild(input);
     menu->addChild(incArrowBtn);
     menu->updateLayout();
-    m_mainLayer->addChildAtPosition(menu, Anchor::Center, position);
+    if (m_mainLayer) m_mainLayer->addChildAtPosition(menu, Anchor::Center, position);
 
     if (isSplit(filter)) menu->setVisible(false);
 
@@ -472,7 +485,7 @@ CCMenuItemToggler* AdvFilterPopup::createToggler(const std::string& spriteName, 
 void AdvFilterPopup::onUpdateValue() {
     for (int i = 0; i < 3; i++) {
         auto& hsv = getFilterHSV(static_cast<ColorType>(i));
-        m_moreColorBtns[i]->toggle(hsv.isActive());
+        if (m_moreColorBtns[i]) m_moreColorBtns[i]->toggle(hsv.isActive());
     }
 
     for (int i = 0; i < 8; i++) {
@@ -483,11 +496,12 @@ void AdvFilterPopup::onUpdateValue() {
         if (isColor(filter) && value.value_or(0) >= 1000) enabled = false;
 
         auto& btns = m_arrowButtons[i];
-
-        btns[0]->setEnabled(enabled);
-        btns[0]->setOpacity(enabled ? 255 : 127);
-        btns[1]->setEnabled(enabled);
-        btns[1]->setOpacity(enabled ? 255 : 127);
+        if (btns[0] && btns[1]) {
+            btns[0]->setEnabled(enabled);
+            btns[0]->setOpacity(enabled ? 255 : 127);
+            btns[1]->setEnabled(enabled);
+            btns[1]->setOpacity(enabled ? 255 : 127);
+        }
     }
 
     // horrible hacky solution, yeah yeah whatever. i'm never touching this code ever again so who gaf
@@ -495,17 +509,23 @@ void AdvFilterPopup::onUpdateValue() {
     bool enabled = s_filter.m_extra.isActive();
     const char* frame = enabled ? "GJ_button_02.png" : "GJ_button_04.png";
 
-    auto extraOnSpr = ButtonSprite::create("Extra", 220, false, "goldFont.fnt", frame, 25, 0.3);
-    auto extraOffSpr = ButtonSprite::create("Extra", 220, false, "goldFont.fnt", frame, 25, 0.3);
-    m_extraToggler->m_onButton->setNormalImage(extraOnSpr);
-    m_extraToggler->m_offButton->setNormalImage(extraOffSpr);
+    if (m_extraToggler) {
+        auto extraOnSpr = ButtonSprite::create("Extra", 220, false, "goldFont.fnt", frame, 25, 0.3);
+        auto extraOffSpr = ButtonSprite::create("Extra", 220, false, "goldFont.fnt", frame, 25, 0.3);
+        if (m_extraToggler->m_onButton) m_extraToggler->m_onButton->setNormalImage(extraOnSpr);
+        if (m_extraToggler->m_offButton) m_extraToggler->m_offButton->setNormalImage(extraOffSpr);
+    }
 
     bool enableReset = s_filter.isActive();
 
-    m_resetBtn->setEnabled(enableReset);
-    m_resetBtn->setOpacity(enableReset ? 255 : 127);
+    if (m_resetBtn) {
+        m_resetBtn->setEnabled(enableReset);
+        m_resetBtn->setOpacity(enableReset ? 255 : 127);
+    }
 
-    static_cast<AFEditorUI*>(EditorUI::get())->onUpdateFilter();
+    if (EditorUI::get()) {
+        static_cast<AFEditorUI*>(EditorUI::get())->onUpdateFilter();
+    }
 }
 
 void AdvFilterPopup::onInputArrow(CCObject* sender) {
@@ -535,7 +555,7 @@ void AdvFilterPopup::onInputArrow(CCObject* sender) {
     }
 
     std::string string = nk::toString(newValue, 2);
-    m_inputs[filter]->setString(string.c_str(), true);
+    if (m_inputs[filter]) m_inputs[filter]->setString(string.c_str(), true);
 }
 
 void AdvFilterPopup::onZLayer(CCObject* sender) {
@@ -568,37 +588,40 @@ void AdvFilterPopup::onMoreColors(CCObject* sender) {
             else fmt::format_to(std::back_inserter(mb), "{}", str);
         }
 
-        input->setString(fmt::to_string(mb), true);
+        if (input) input->setString(fmt::to_string(mb), true);
 
         onUpdateValue();
     };
 
     auto popup = MoreColorsPopup::create(colorType, std::move(onUpdate));
-    popup->m_noElasticity = true;
+    if (!popup) return;
 
+    popup->m_noElasticity = true;
     popup->show();
 }
 
 void AdvFilterPopup::onToggleColor(CCObject* sender) {
     m_isToggleColor = !m_isToggleColor;
 
-    float xOffset = (m_isToggleColor ? 167 : -5) + 21;
-    float yOffset = static_cast<AnchorLayoutOptions*>(m_colorToggler->getLayoutOptions())->getOffset().y;
-    m_colorToggler->updateAnchoredPosition(Anchor::Center, {xOffset, yOffset});
+    if (m_colorToggler) {
+        float xOffset = (m_isToggleColor ? 167 : -5) + 21;
+        float yOffset = static_cast<AnchorLayoutOptions*>(m_colorToggler->getLayoutOptions())->getOffset().y;
+        m_colorToggler->updateAnchoredPosition(Anchor::Center, {xOffset, yOffset});
+    }
 
-    m_controlMenus[FilterType::COLOR]->setVisible(!m_isToggleColor);
-    m_controlMenus[FilterType::BASECOLOR]->setVisible(m_isToggleColor);
-    m_controlMenus[FilterType::DETAILCOLOR]->setVisible(m_isToggleColor);
+    if (m_controlMenus[FilterType::COLOR]) m_controlMenus[FilterType::COLOR]->setVisible(!m_isToggleColor);
+    if (m_controlMenus[FilterType::BASECOLOR]) m_controlMenus[FilterType::BASECOLOR]->setVisible(m_isToggleColor);
+    if (m_controlMenus[FilterType::DETAILCOLOR]) m_controlMenus[FilterType::DETAILCOLOR]->setVisible(m_isToggleColor);
 
-    m_moreColorBtns[ColorType::BOTH]->setVisible(!m_isToggleColor);
-    m_moreColorBtns[ColorType::BASE]->setVisible(m_isToggleColor);
-    m_moreColorBtns[ColorType::DETAIL]->setVisible(m_isToggleColor);
+    if (m_moreColorBtns[ColorType::BOTH]) m_moreColorBtns[ColorType::BOTH]->setVisible(!m_isToggleColor);
+    if (m_moreColorBtns[ColorType::BASE]) m_moreColorBtns[ColorType::BASE]->setVisible(m_isToggleColor);
+    if (m_moreColorBtns[ColorType::DETAIL]) m_moreColorBtns[ColorType::DETAIL]->setVisible(m_isToggleColor);
 
     if (!sender) return;
 
-    m_inputs[FilterType::COLOR]->setString("");
-    m_inputs[FilterType::BASECOLOR]->setString("");
-    m_inputs[FilterType::DETAILCOLOR]->setString("");
+    if (m_inputs[FilterType::COLOR]) m_inputs[FilterType::COLOR]->setString("");
+    if (m_inputs[FilterType::BASECOLOR]) m_inputs[FilterType::BASECOLOR]->setString("");
+    if (m_inputs[FilterType::DETAILCOLOR]) m_inputs[FilterType::DETAILCOLOR]->setString("");
 
     s_filter.m_color.setSplit(m_isToggleColor);
     onUpdateValue();
@@ -607,19 +630,21 @@ void AdvFilterPopup::onToggleColor(CCObject* sender) {
 void AdvFilterPopup::onToggleScale(CCObject* sender) {
     m_isToggleScale = !m_isToggleScale;
 
-    float xOffset = m_isToggleScale ? 167 : -5;
-    float yOffset = static_cast<AnchorLayoutOptions*>(m_scaleToggler->getLayoutOptions())->getOffset().y;
-    m_scaleToggler->updateAnchoredPosition(Anchor::Center, {xOffset, yOffset});
+    if (m_scaleToggler) {
+        float xOffset = m_isToggleScale ? 167 : -5;
+        float yOffset = static_cast<AnchorLayoutOptions*>(m_scaleToggler->getLayoutOptions())->getOffset().y;
+        m_scaleToggler->updateAnchoredPosition(Anchor::Center, {xOffset, yOffset});
+    }
 
-    m_controlMenus[FilterType::SCALE]->setVisible(!m_isToggleScale);
-    m_controlMenus[FilterType::SCALEX]->setVisible(m_isToggleScale);
-    m_controlMenus[FilterType::SCALEY]->setVisible(m_isToggleScale);
+    if (m_controlMenus[FilterType::SCALE]) m_controlMenus[FilterType::SCALE]->setVisible(!m_isToggleScale);
+    if (m_controlMenus[FilterType::SCALEX]) m_controlMenus[FilterType::SCALEX]->setVisible(m_isToggleScale);
+    if (m_controlMenus[FilterType::SCALEY]) m_controlMenus[FilterType::SCALEY]->setVisible(m_isToggleScale);
 
     if (!sender) return;
 
-    m_inputs[FilterType::SCALE]->setString("");
-    m_inputs[FilterType::SCALEX]->setString("");
-    m_inputs[FilterType::SCALEY]->setString("");
+    if (m_inputs[FilterType::SCALE]) m_inputs[FilterType::SCALE]->setString("");
+    if (m_inputs[FilterType::SCALEX]) m_inputs[FilterType::SCALEX]->setString("");
+    if (m_inputs[FilterType::SCALEY]) m_inputs[FilterType::SCALEY]->setString("");
 
     s_filter.m_scale.setSplit(m_isToggleScale);
     onUpdateValue();
@@ -631,6 +656,8 @@ void AdvFilterPopup::onExtra(CCObject* sender) {
     };
 
     auto popup = MoreExtrasPopup::create(std::move(onUpdate));
+    if (!popup) return;
+    
     popup->m_noElasticity = true;
 
     popup->show();
@@ -640,20 +667,22 @@ void AdvFilterPopup::onReset(CCObject* sender) {
     s_filter.reset();
 
     for (auto input : m_inputs) {
-        input->setString("");
+        if (input) input->setString("");
     }
 
-    for (auto zLayer : CCArrayExt<CCMenuItemToggler*>(m_zLayerMenu->getChildren())) {
-        zLayer->toggle(false);
+    if (m_zLayerMenu) {
+        for (auto zLayer : CCArrayExt<CCMenuItemToggler*>(m_zLayerMenu->getChildren())) {
+            if (zLayer) zLayer->toggle(false);
+        }
     }
 
     if (m_isToggleColor) {
-        m_colorToggler->toggle(false);
+        if (m_colorToggler) m_colorToggler->toggle(false);
         onToggleColor(nullptr);
     }
 
     if (m_isToggleScale) {
-        m_scaleToggler->toggle(false);
+        if (m_scaleToggler) m_scaleToggler->toggle(false);
         onToggleScale(nullptr);
     }
 
@@ -662,15 +691,18 @@ void AdvFilterPopup::onReset(CCObject* sender) {
 
 void AdvFilterPopup::onSelectAll(CCObject* sender) {
     CCArray* objects = CCArray::create();
-    objects->addObjectsFromArray(LevelEditorLayer::get()->m_objects);
+    auto lel = LevelEditorLayer::get();
+    if (lel && lel->m_objects) objects->addObjectsFromArray(lel->m_objects);
 
     auto eui = EditorUI::get();
-    eui->processSelectObjects(objects);
-    eui->updateButtons();
-    eui->deactivateRotationControl();
-    eui->deactivateScaleControl();
-    eui->deactivateTransformControl();
-    eui->updateObjectInfoLabel();
+    if (eui) {
+        eui->processSelectObjects(objects);
+        eui->updateButtons();
+        eui->deactivateRotationControl();
+        eui->deactivateScaleControl();
+        eui->deactivateTransformControl();
+        eui->updateObjectInfoLabel();
+    }
 
     onClose(nullptr);
 }
@@ -681,7 +713,8 @@ bool MoreColorsPopup::init(ColorType colorType, UpdateCallback callback) {
     if (colorType == ColorType::BASE) setTitle("Base Color Special");
     else if (colorType == ColorType::DETAIL) setTitle("Detail Color Special");
     else setTitle("Color Special");
-    m_closeBtn->removeFromParent();
+    
+    if (m_closeBtn) m_closeBtn->removeFromParent();
 
     FilterType filter = static_cast<FilterType>(static_cast<int>(colorType) + 1);
 
@@ -722,7 +755,7 @@ bool MoreColorsPopup::init(ColorType colorType, UpdateCallback callback) {
     }
 
     colorMenu->updateLayout();
-    m_mainLayer->addChildAtPosition(colorMenu, Anchor::Center, {0, 30});
+    if (m_mainLayer) m_mainLayer->addChildAtPosition(colorMenu, Anchor::Center, {0, 30});
 
     // HSV INPUTS
 
@@ -769,13 +802,13 @@ bool MoreColorsPopup::init(ColorType colorType, UpdateCallback callback) {
     }
 
     hsvMenu->updateLayout();
-    m_mainLayer->addChildAtPosition(hsvMenu, Anchor::Center, {0, -43});
+    if (m_mainLayer) m_mainLayer->addChildAtPosition(hsvMenu, Anchor::Center, {0, -43});
 
     // OK BUTTON
 
     auto okSpr = ButtonSprite::create("OK", 40, true, "goldFont.fnt", "GJ_button_01.png", 30, 0.8);
     auto okBtn = CCMenuItemSpriteExtra::create(okSpr, this, menu_selector(MoreColorsPopup::onClose));
-    m_buttonMenu->addChildAtPosition(okBtn, Anchor::Bottom, {0, 24});
+    if (m_buttonMenu) m_buttonMenu->addChildAtPosition(okBtn, Anchor::Bottom, {0, 24});
 
     return true;
 }
@@ -800,7 +833,7 @@ bool MoreExtrasPopup::init(UpdateCallback callback) {
     m_callback = std::move(callback);
 
     setTitle("Object Options");
-    m_closeBtn->removeFromParent();
+    if (m_closeBtn) m_closeBtn->removeFromParent();
     auto winCenter = CCDirector::get()->getWinSize() / 2;
 
     auto menu = CCMenu::create();
@@ -844,13 +877,13 @@ bool MoreExtrasPopup::init(UpdateCallback callback) {
         }
     }
 
-    m_mainLayer->addChildAtPosition(menu, Anchor::Center, { 0.f, 5.f });
+    if (m_mainLayer) m_mainLayer->addChildAtPosition(menu, Anchor::Center, { 0.f, 5.f });
 
     // OK BUTTON
 
     auto okSpr = ButtonSprite::create("OK", 40, true, "goldFont.fnt", "GJ_button_01.png", 30, 0.8);
     auto okBtn = CCMenuItemSpriteExtra::create(okSpr, this, menu_selector(MoreExtrasPopup::onClose));
-    m_buttonMenu->addChildAtPosition(okBtn, Anchor::Bottom, {0, 24});
+    if (m_buttonMenu) m_buttonMenu->addChildAtPosition(okBtn, Anchor::Bottom, {0, 24});
 
     return true;
 }
@@ -860,7 +893,9 @@ void MoreExtrasPopup::setTogglerValue(Button* sender, ExtraType extra, ExtraValu
 
     auto frameName = getExtraValueTypeFrameName(value);
     auto frame = CCSpriteFrameCache::get()->spriteFrameByName(frameName.c_str());
-    static_cast<CCSprite*>(sender->getDisplayNode())->setDisplayFrame(frame);
+    if (sender && sender->getDisplayNode()) {
+        static_cast<CCSprite*>(sender->getDisplayNode())->setDisplayFrame(frame);
+    }
 }
 
 ExtraValueType MoreExtrasPopup::getNextValue(ExtraValueType value) {
