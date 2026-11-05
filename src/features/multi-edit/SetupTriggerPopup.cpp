@@ -1156,13 +1156,17 @@ class $modify(GJPFollowCommandLayer) {
         if (maxSpeedInput) maxSpeedInput->setMaxLabelWidth(40);
         if (targetIDInput) targetIDInput->setMaxLabelWidth(40);
 
-        ctx->addSlider(m_moveTimeSlider, 10);
-        ctx->addSlider(m_speedSlider, 90);
-        ctx->addSlider(m_delaySlider, 91);
+        auto moveTimeSlider = m_mainLayer->getChildByType<Slider*>(0);
+        auto speedSlider = m_mainLayer->getChildByType<Slider*>(1);
+        auto delaySlider = m_mainLayer->getChildByType<Slider*>(2);
 
-        m_moveTimeSlider->m_delegate = this;
-        m_speedSlider->m_delegate = this;
-        m_delaySlider->m_delegate = this;
+        ctx->addSlider(moveTimeSlider, 10);
+        ctx->addSlider(speedSlider, 90);
+        ctx->addSlider(delaySlider, 91);
+
+        if (moveTimeSlider) moveTimeSlider->m_delegate = this;
+        if (speedSlider) speedSlider->m_delegate = this;
+        if (delaySlider) delaySlider->m_delegate = this;
 
         ctx->addInputLabel(m_mainLayer->getChildByType<CCLabelBMFont*>(1), 10);
         ctx->addInputLabel(m_mainLayer->getChildByType<CCLabelBMFont*>(2), 90);
