@@ -2,7 +2,7 @@
 
 A small collection of editor utilities to help make my life a little easier when creating.
 
-This mod is available on the [geode index](https://geode-sdk.org/mods/ninkaz.editor_utils) for Windows, Mac, and Android. After installing Geode, search for it in the in-game mod browser and click install.
+This mod is available on the [geode index](https://geode-sdk.org/mods/ninkaz.editor_utils) for Windows, Mac, and Android. After installing Geode, search for it in the in game mod browser and click install.
 
 ## Features
 
