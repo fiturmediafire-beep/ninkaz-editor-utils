@@ -2,6 +2,7 @@
 #include "../misc/CCBoundedMenu.hpp"
 #include "../misc/StringUtils.hpp"
 #include <Geode/modify/EditorPauseLayer.hpp>
+#include <unordered_set>
 
 class $modify(ARGEditorPauseLayer, EditorPauseLayer) {
     $override
@@ -164,15 +165,6 @@ bool AddRandomGroupsPopup::init(CCArray* selectedObjects) {
 
     // BOTTOM ROW CONTROLS
 
-    // auto coverageLayout = CCMenu::create();
-    // coverageLayout->setLayout(
-    //     RowLayout::create()
-    //         ->setGap(5.f)
-    //         ->setGrowCrossAxis(true)
-    // );
-    // coverageLayout->setScale(0.8f);
-    // coverageLayout->setContentWidth(160.f);
-
     auto bottomLayout = CCMenu::create();
     bottomLayout->setLayout(
         RowLayout::create()
@@ -203,15 +195,6 @@ bool AddRandomGroupsPopup::init(CCArray* selectedObjects) {
     bottomLayout->addChild(coverageLabel);
 
     // "IGNORE LINKED" CHECKBOX
-
-    // auto toggleLayout = CCMenu::create();
-    // toggleLayout->setLayout(
-    //     RowLayout::create()
-    //         ->setGap(15.f)
-    //         ->setGrowCrossAxis(true)
-    // );
-    // toggleLayout->setScale(0.5f);
-    // toggleLayout->setContentWidth(280.f);
 
     auto offSpr = CCSprite::createWithSpriteFrameName("GJ_checkOff_001.png");
     auto onSpr = CCSprite::createWithSpriteFrameName("GJ_checkOn_001.png");
@@ -257,7 +240,7 @@ void AddRandomGroupsPopup::onChangeInput(CCObject* sender) {
 }
 
 void AddRandomGroupsPopup::onNextFree(CCObject* sender) {
-    int nextFreeID = LevelEditorLayer::get()->getNextFreeGroupID(gd::unordered_set<int>());
+    int nextFreeID = LevelEditorLayer::get()->getNextFreeGroupID(std::unordered_set<int>());
 
     if (nextFreeID < 0 || nextFreeID > 9999) return;
 
@@ -389,24 +372,6 @@ void AddRandomGroupsPopup::assignGroups() {
 
     random::shuffle(linkedObjectGroups);
 
-    // std::sort(linkedObjectGroups.begin(), linkedObjectGroups.end(), [](const std::vector<GameObject*>& a, const std::vector<GameObject*>& b) {
-    //     float avgXa = 0, avgYa = 0, avgXb = 0, avgYb = 0;
-    //     for (GameObject* obj : a) {
-    //         avgXa += obj->m_positionX;
-    //         avgYa += obj->m_positionY;
-    //     }
-    //     for (GameObject* obj : b) {
-    //         avgXb += obj->m_positionX;
-    //         avgYb += obj->m_positionY;
-    //     }
-    //     avgXa /= a.size();
-    //     avgYa /= a.size();
-    //     avgXb /= b.size();
-    //     avgYb /= b.size();
-
-    //     return avgXa < avgXb;
-    // });
-
     short numToKeep = static_cast<int>(std::round(linkedObjectGroups.size() * coveragePercent));
     linkedObjectGroups.resize(numToKeep);
 
@@ -452,41 +417,3 @@ void AddRandomGroupsPopup::onApply(CCObject* sender) {
     assignGroups();
     onClose(sender);
 }
-
-/* sort groups sequentially based on x and y position (will add later)
-
-std::sort(linkedObjectGroups.begin(), linkedObjectGroups.end(), [](const std::vector<GameObject*>& a, const std::vector<GameObject*>& b) {
-    float avgXa = 0, avgYa = 0, avgXb = 0, avgYb = 0;
-    for (GameObject* obj : a) {
-        avgXa += obj->m_realXPosition;
-        avgYa += obj->m_realYPosition;
-    }
-    for (GameObject* obj : b) {
-        avgXb += obj->m_realXPosition;
-        avgYb += obj->m_realYPosition;
-    }
-    avgXa /= a.size();
-    avgYa /= a.size();
-    avgXb /= b.size();
-    avgYb /= b.size();
-    return std::tie(avgXa, avgYa) < std::tie(avgXb, avgYb);
-}); */
-
-/* originally wanted to put my icon in the info box, but i figured
-it was a bit self-indulgent...here's the code if i ever need it
-
-auto iconSpr = SimplePlayer::create(66);
-auto primary = ccc3(255, 0, 125);
-auto secondary = ccc3(0, 255, 255);
-iconSpr->setColor(primary);
-iconSpr->setSecondColor(secondary);
-iconSpr->setGlowOutline(secondary);
-iconSpr->updateColors();
-
-iconSpr->setPosition({20, 20});
-this->addChild(iconSpr);
-
-auto iconLabel = CCLabelBMFont::create("By NinKaz", "bigFont.fnt");
-iconLabel->setPosition({85, 12});
-iconLabel->setScale(0.5f);
-this->addChild(iconLabel); */
