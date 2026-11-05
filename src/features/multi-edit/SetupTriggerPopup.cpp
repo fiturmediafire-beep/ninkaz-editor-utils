@@ -376,8 +376,8 @@ class $modify(MESetupTriggerPopup, SetupTriggerPopup) {
     }
 
     $override
-    bool init(EffectGameObject* obj, CCArray* objs, float f1, float f2, int i1) {
-        if (!SetupTriggerPopup::init(obj, objs, f1, f2, i1)) return false;
+        bool init(EffectGameObject* obj, CCArray* objs, float f1, float f2, int i1, float f3) {
+        if (!SetupTriggerPopup::init(obj, objs, f1, f2, i1, f3)) return false;
         if (!MultiEditContext::isTriggerPopup(this)) return true;
 
         m_fields->init(this);
@@ -630,12 +630,13 @@ class $modify(STPSetupSpawnPopup, SetupSpawnPopup) {
         auto delAllSpr = ButtonSprite::create(
             CCSprite::createWithSpriteFrameName("edit_delBtn_001.png"),
             32,
-            0.f,
+            0,
             32.f,
             1.f,
             true,
             "GJ_button_04.png",
-            true
+            true,
+            0.f
         );
 
         auto delAllBtn = CCMenuItemSpriteExtra::create(
@@ -697,67 +698,6 @@ class $modify(STPSetupSpawnPopup, SetupSpawnPopup) {
         }
 
         queueUpdateButtons();
-    }
-};
-
-#include <Geode/modify/GJFollowCommandLayer.hpp>
-
-class $modify(GJFollowCommandLayer) {
-    bool init(EffectGameObject* obj, CCArray* objs) {
-        if (!GJFollowCommandLayer::init(obj, objs)) return false;
-
-        auto ctx = getMultiEditContext(this);
-
-        ctx->callback = [this, ctx](int property, float value) {
-            if (property == 10) {
-                MultiEditContext::setSliderValue(m_moveTimeSlider, value, 0, 10);
-            } else if (property == 72) {
-                MultiEditContext::setSliderValue(m_xModSlider, value, -1, 1);
-            } else if (property == 73) {
-                MultiEditContext::setSliderValue(m_yModSlider, value, -1, 1);
-            }
-        };
-
-        ctx->addInput(m_moveTimeInput, 10);
-        ctx->addInput(m_xModInput, 72);
-        ctx->addInput(m_yModInput, 73);
-        ctx->addInput(m_targetIDInput, 51);
-        ctx->addInput(m_followIDInput, 71);
-
-        ctx->addInputBG(m_mainLayer->getChildByType<CCScale9Sprite*>(1), 10);
-        ctx->addInputBG(m_mainLayer->getChildByType<CCScale9Sprite*>(2), 72);
-        ctx->addInputBG(m_mainLayer->getChildByType<CCScale9Sprite*>(3), 73);
-        ctx->addInputBG(m_mainLayer->getChildByType<CCScale9Sprite*>(4), 51);
-        ctx->addInputBG(m_mainLayer->getChildByType<CCScale9Sprite*>(5), 71);
-
-        m_moveTimeInput->setMaxLabelWidth(50);
-        m_xModInput->setMaxLabelWidth(50);
-        m_yModInput->setMaxLabelWidth(50);
-        m_targetIDInput->setMaxLabelWidth(40);
-        m_followIDInput->setMaxLabelWidth(40);
-
-        ctx->addSlider(m_moveTimeSlider, 10);
-        ctx->addSlider(m_xModSlider, 72);
-        ctx->addSlider(m_yModSlider, 73);
-
-        m_moveTimeSlider->m_delegate = this;
-        m_xModSlider->m_delegate = this;
-        m_yModSlider->m_delegate = this;
-
-        ctx->addInputLabel(m_mainLayer->getChildByType<CCLabelBMFont*>(1), 10);
-        ctx->addInputLabel(m_mainLayer->getChildByType<CCLabelBMFont*>(2), 72);
-        ctx->addInputLabel(m_mainLayer->getChildByType<CCLabelBMFont*>(3), 73);
-        ctx->addInputLabel(m_mainLayer->getChildByType<CCLabelBMFont*>(7), 51);
-        ctx->addInputLabel(m_mainLayer->getChildByType<CCLabelBMFont*>(8), 71);
-
-        ctx->addButton(m_buttonMenu->getChildByType<CCMenuItemSpriteExtra*>(2), 51);
-        ctx->addButton(m_buttonMenu->getChildByType<CCMenuItemSpriteExtra*>(3), 51);
-        ctx->addButton(m_buttonMenu->getChildByType<CCMenuItemSpriteExtra*>(4), 71);
-        ctx->addButton(m_buttonMenu->getChildByType<CCMenuItemSpriteExtra*>(5), 71);
-
-        ctx->setupMixed();
-
-        return true;
     }
 };
 
