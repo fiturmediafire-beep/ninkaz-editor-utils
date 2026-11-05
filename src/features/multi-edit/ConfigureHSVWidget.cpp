@@ -346,8 +346,8 @@ class $modify(MEHSVWidgetPopup, HSVWidgetPopup) {
     };
 
     $override
-        bool init(ccHSVValue hsv, HSVWidgetDelegate* delegate, std::string title) {
-        if (!HSVWidgetPopup::init(hsv, delegate, title)) return false;
+    bool init(ccHSVValue hsv, ccColor3B color, HSVWidgetDelegate* delegate, std::string title) {
+        if (!HSVWidgetPopup::init(hsv, color, delegate, title)) return false;
 
         m_fields->isBase = title == "Base HSV";
 
