@@ -709,17 +709,21 @@ class $modify(SetupCollisionTriggerPopup) {
 
         auto ctx = getMultiEditContext(this);
 
-        ctx->addInput(m_blockAInput, 80);
-        ctx->addInput(m_blockBInput, 95);
-        ctx->addInput(m_targetIDInput, 51);
+        auto blockAInput = m_mainLayer->getChildByType<CCTextInputNode*>(0);
+        auto blockBInput = m_mainLayer->getChildByType<CCTextInputNode*>(1);
+        auto targetIDInput = m_mainLayer->getChildByType<CCTextInputNode*>(2);
+
+        ctx->addInput(blockAInput, 80);
+        ctx->addInput(blockBInput, 95);
+        ctx->addInput(targetIDInput, 51);
 
         ctx->addInputBG(m_mainLayer->getChildByType<CCScale9Sprite*>(1), 80);
         ctx->addInputBG(m_mainLayer->getChildByType<CCScale9Sprite*>(2), 95);
         ctx->addInputBG(m_mainLayer->getChildByType<CCScale9Sprite*>(3), 51);
 
-        m_blockAInput->setMaxLabelWidth(40);
-        m_blockBInput->setMaxLabelWidth(40);
-        m_targetIDInput->setMaxLabelWidth(40);
+        if (blockAInput) blockAInput->setMaxLabelWidth(40);
+        if (blockBInput) blockBInput->setMaxLabelWidth(40);
+        if (targetIDInput) targetIDInput->setMaxLabelWidth(40);
 
         ctx->addInputLabel(m_mainLayer->getChildByType<CCLabelBMFont*>(1), 80);
         ctx->addInputLabel(m_mainLayer->getChildByType<CCLabelBMFont*>(2), 95);
@@ -786,7 +790,9 @@ class $modify(MECollisionBlockPopup, CollisionBlockPopup) {
             }
 
             if (value) {
-                popup->m_blockIDInput->setString(nk::toString(*value, 0));
+                if (auto blockIDInput = popup->m_mainLayer->getChildByType<CCTextInputNode*>(0)) {
+                    blockIDInput->setString(nk::toString(*value, 0));
+                }
             }
         }
 
@@ -805,9 +811,11 @@ class $modify(MECollisionBlockPopup, CollisionBlockPopup) {
 
         m_fields->init(this);
 
-        m_fields->addInput(m_blockIDInput, 80);
+        auto blockIDInput = m_mainLayer->getChildByType<CCTextInputNode*>(0);
+
+        m_fields->addInput(blockIDInput, 80);
         m_fields->addInputBG(m_mainLayer->getChildByType<CCScale9Sprite*>(1), 80);
-        m_blockIDInput->setMaxLabelWidth(40);
+        if (blockIDInput) blockIDInput->setMaxLabelWidth(40);
 
         m_fields->addButton(m_buttonMenu->getChildByType<CCMenuItemSpriteExtra*>(2), 80);
         m_fields->addButton(m_buttonMenu->getChildByType<CCMenuItemSpriteExtra*>(3), 80);
@@ -854,20 +862,6 @@ class $modify(MESetupTouchTogglePopup, SetupTouchTogglePopup) {
 
         return true;
     }
-
-    $override
-    void onTargetIDArrow(CCObject* sender) {
-        SetupTouchTogglePopup::onTargetIDArrow(sender);
-
-        auto ctx = getMultiEditContext(this);
-
-        for (auto obj : ctx->getGameObjects()) {
-            if (auto trigger = typeinfo_cast<EffectGameObject*>(obj)) {
-                trigger->m_targetGroupID = m_groupID;
-                LevelEditorLayer::updateObjectLabel(trigger);
-            }
-        }
-    }
 };
 
 #include <Geode/modify/SetupCountTriggerPopup.hpp>
@@ -878,12 +872,17 @@ class $modify(SetupCountTriggerPopup) {
 
         auto ctx = getMultiEditContext(this);
 
-        ctx->addInput(m_itemIDInput, 80);
-        ctx->addInput(m_targetCountInput, 77);
-        ctx->addInput(m_targetIDInput, 51);
-        m_itemIDInput->setMaxLabelWidth(40);
-        m_targetCountInput->setMaxLabelWidth(40);
-        m_targetIDInput->setMaxLabelWidth(40);
+        auto itemIDInput = m_mainLayer->getChildByType<CCTextInputNode*>(0);
+        auto targetCountInput = m_mainLayer->getChildByType<CCTextInputNode*>(1);
+        auto targetIDInput = m_mainLayer->getChildByType<CCTextInputNode*>(2);
+
+        ctx->addInput(itemIDInput, 80);
+        ctx->addInput(targetCountInput, 77);
+        ctx->addInput(targetIDInput, 51);
+
+        if (itemIDInput) itemIDInput->setMaxLabelWidth(40);
+        if (targetCountInput) targetCountInput->setMaxLabelWidth(40);
+        if (targetIDInput) targetIDInput->setMaxLabelWidth(40);
 
         ctx->addInputBG(m_mainLayer->getChildByType<CCScale9Sprite*>(1), 80);
         ctx->addInputBG(m_mainLayer->getChildByType<CCScale9Sprite*>(2), 77);
@@ -914,12 +913,17 @@ class $modify(SetupInstantCountPopup) {
 
         auto ctx = getMultiEditContext(this);
 
-        ctx->addInput(m_itemIDInput, 80);
-        ctx->addInput(m_targetCountInput, 77);
-        ctx->addInput(m_targetIDInput, 51);
-        m_itemIDInput->setMaxLabelWidth(40);
-        m_targetCountInput->setMaxLabelWidth(40);
-        m_targetIDInput->setMaxLabelWidth(40);
+        auto itemIDInput = m_mainLayer->getChildByType<CCTextInputNode*>(0);
+        auto targetCountInput = m_mainLayer->getChildByType<CCTextInputNode*>(1);
+        auto targetIDInput = m_mainLayer->getChildByType<CCTextInputNode*>(2);
+
+        ctx->addInput(itemIDInput, 80);
+        ctx->addInput(targetCountInput, 77);
+        ctx->addInput(targetIDInput, 51);
+
+        if (itemIDInput) itemIDInput->setMaxLabelWidth(40);
+        if (targetCountInput) targetCountInput->setMaxLabelWidth(40);
+        if (targetIDInput) targetIDInput->setMaxLabelWidth(40);
 
         ctx->addInputBG(m_mainLayer->getChildByType<CCScale9Sprite*>(1), 80);
         ctx->addInputBG(m_mainLayer->getChildByType<CCScale9Sprite*>(2), 77);
@@ -1124,12 +1128,19 @@ class $modify(GJPFollowCommandLayer) {
 
         auto ctx = getMultiEditContext(this);
 
-        ctx->addInput(m_moveTimeInput, 10);
-        ctx->addInput(m_speedInput, 90);
-        ctx->addInput(m_delayInput, 91);
-        ctx->addInput(m_offsetInput, 92);
-        ctx->addInput(m_maxSpeedInput, 105);
-        ctx->addInput(m_targetIDInput, 51);
+        auto moveTimeInput = m_mainLayer->getChildByType<CCTextInputNode*>(0);
+        auto speedInput = m_mainLayer->getChildByType<CCTextInputNode*>(1);
+        auto delayInput = m_mainLayer->getChildByType<CCTextInputNode*>(2);
+        auto targetIDInput = m_mainLayer->getChildByType<CCTextInputNode*>(3);
+        auto offsetInput = m_mainLayer->getChildByType<CCTextInputNode*>(4);
+        auto maxSpeedInput = m_mainLayer->getChildByType<CCTextInputNode*>(5);
+
+        ctx->addInput(moveTimeInput, 10);
+        ctx->addInput(speedInput, 90);
+        ctx->addInput(delayInput, 91);
+        ctx->addInput(offsetInput, 92);
+        ctx->addInput(maxSpeedInput, 105);
+        ctx->addInput(targetIDInput, 51);
 
         ctx->addInputBG(m_mainLayer->getChildByType<CCScale9Sprite*>(1), 10);
         ctx->addInputBG(m_mainLayer->getChildByType<CCScale9Sprite*>(2), 90);
@@ -1138,12 +1149,12 @@ class $modify(GJPFollowCommandLayer) {
         ctx->addInputBG(m_mainLayer->getChildByType<CCScale9Sprite*>(5), 92);
         ctx->addInputBG(m_mainLayer->getChildByType<CCScale9Sprite*>(6), 105);
 
-        m_moveTimeInput->setMaxLabelWidth(50);
-        m_speedInput->setMaxLabelWidth(50);
-        m_delayInput->setMaxLabelWidth(50);
-        m_offsetInput->setMaxLabelWidth(40);
-        m_maxSpeedInput->setMaxLabelWidth(40);
-        m_targetIDInput->setMaxLabelWidth(40);
+        if (moveTimeInput) moveTimeInput->setMaxLabelWidth(50);
+        if (speedInput) speedInput->setMaxLabelWidth(50);
+        if (delayInput) delayInput->setMaxLabelWidth(50);
+        if (offsetInput) offsetInput->setMaxLabelWidth(40);
+        if (maxSpeedInput) maxSpeedInput->setMaxLabelWidth(40);
+        if (targetIDInput) targetIDInput->setMaxLabelWidth(40);
 
         ctx->addSlider(m_moveTimeSlider, 10);
         ctx->addSlider(m_speedSlider, 90);
