@@ -17,10 +17,16 @@ class $modify(ARGEditorPauseLayer, EditorPauseLayer) {
         );
         btn->setID("random-groups-button"_spr);
 
-        auto menu = getChildByID("small-actions-menu");
-        auto afterNode = static_cast<CCNode*>(menu->getChildren()->objectAtIndex(0));
-        menu->insertBefore(btn, afterNode);
-        menu->updateLayout();
+auto menu = getChildByID("small-actions-menu");
+if (!menu) return true;
+
+if (menu->getChildrenCount() > 0) {
+    auto afterNode = static_cast<CCNode*>(menu->getChildren()->objectAtIndex(0));
+    menu->insertBefore(btn, afterNode);
+} else {
+    menu->addChild(btn);
+}
+menu->updateLayout();
 
         return true;
     }
